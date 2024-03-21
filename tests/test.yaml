@@ -1,0 +1,35 @@
+person:
+  name: Paul Gierz
+  editor: !ENV ${EDITOR}
+  user: !SHELL $(whoami)
+  a_string: " hello world I am here to make your life impossible "
+  # My comment
+  my_var: MY_VAR
+  my_other_var:
+    - a
+    - b
+    - c
+  my_other_list: &first [a, b, c]
+  my_bolean: &second True
+  new_thing: !++ [*first, *second]
+  my_int: 12.1
+  my_int2: 42
+  list_with_dict_inside:
+    - 1
+    - 2
+    - my_dict:
+        foo:
+          - 1
+          - 2
+          - my_dict:
+              foo: bar
+array1: &my_array_alias
+  - foo
+  - bar
+array2:
+  - <: *my_array_alias
+  - baz
+a: &a a
+b: &b b
+c: !concat [*a, ' | ', *b]
+thing: ${.a}
