@@ -1,7 +1,10 @@
 # from .config import EsmToolsSimulationConfig
-from constructor import EsmToolsConstructor
+import dpath.util
 from loguru import logger
 from ruamel.yaml import YAML
+
+from .config import EsmToolsConfigSingleton
+from .constructor import EsmToolsConstructor, FencedValue
 
 # from .constructor import EsmToolsConstructor
 
@@ -42,7 +45,6 @@ class EsmToolsYaml(YAML):
         # self.Representer: ...
         # self.Parser: ...
         # self.Composer: ...
-        # self.Constructor: ...
 
 
 # NOTE(PG): This could be folded into the EsmToolsYaml class, but I'm keeping it
@@ -58,13 +60,23 @@ class EsmToolsYamlPostprocessor:
     """
 
     def __call__(self, data):
+        """
+        Arguments
+        ---------
+        data : dict
+            The YAML data to process.
+        processor : EsmToolsYaml
+            The processor to use to load the YAML data.
+        """
         logger.debug(f"Running postprocessor on {data=}")
         data = self.recursive_run_method(data, self.substitute_variables)
-        data = self.recursive_run_metho(data, self.do_math)
+        data = self.recursive_run_method(data, self.do_math)
         data = self.recursive_run_method(data, self.run_chooses)
+        breakpoint()
+        data = self.recursive_run_method(data, self.replace_fence)
         return data
 
-    def recursive_run_method(self, data, method):
+    def recursive_run_method(self, data, method, *args, **kwargs):
         """
         Recursively run a method on the YAML data.
 
@@ -80,14 +92,20 @@ class EsmToolsYamlPostprocessor:
         dict
             The processed YAML data.
         """
+        all_fences = EsmToolsConfigSingleton.get_instance().config["postprocess_tasks"][
+            "fences"
+        ]
+        logger.debug(f"{all_fences=}")
+        breakpoint()
+        logger.debug(f"Running {method.__name__} on {type(data)=}")
         if isinstance(data, dict):
             for key, value in data.items():
-                data[key] = self.recursive_run_method(value, method)
+                data[key] = self.recursive_run_method(value, method, *args, **kwargs)
         elif isinstance(data, list):
             for index, item in enumerate(data):
-                data[index] = self.recursive_run_method(item, method)
+                data[index] = self.recursive_run_method(item, method, *args, **kwargs)
         else:
-            data = method(data)
+            data = method(data, *args, **kwargs)
         return data
 
     def substitute_variables(self, data):
@@ -136,6 +154,28 @@ class EsmToolsYamlPostprocessor:
         dict
             The processed YAML data.
         """
+        return data
+
+    def replace_fence(self, data):
+        """
+        Replace the fence logic in the YAML file.
+
+        Parameters
+        ----------
+        data : dict
+            The YAML data to process.
+
+        Returns
+        -------
+        dict
+            The processed YAML data.
+        """
+        if isinstance(data, FencedValue):
+            breakpoint()
+            logger.debug(f"{data=}")
+            logger.debug(f"{data.fence_placeholder=}")
+            logger.debug(f"{data.fence_values_to_expand=}")
+            return data.value
         return data
 
 

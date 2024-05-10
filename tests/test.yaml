@@ -1,7 +1,9 @@
 person:
   name: Paul Gierz
-  editor: !ENV ${EDITOR}
   user: !SHELL $(whoami)
+general:
+  test_env_var: !ENV TESTING_VAR
+  test_env_var2: !ENV ${TESTING_VAR}
   a_string: " hello world I am here to make your life impossible "
   # My comment
   my_var: MY_VAR

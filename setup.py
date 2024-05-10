@@ -15,6 +15,7 @@ setup(
     install_requires=[
         "ruamel.yaml>=0.18.6",
         "loguru",
+        "dpath",
         # Add other dependencies as needed
     ],
     extras_require={

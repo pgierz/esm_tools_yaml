@@ -1,0 +1,7 @@
+all_vars:
+  !EXPAND my_[[ STREAM --> stream]]_in_streams: foo
+  streams:
+    - a
+    - b
+    - c
+    - d
